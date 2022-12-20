@@ -3,16 +3,16 @@ from PIL import Image
 def rgb2hex(r, g, b):
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
-filename = "cobra_01"
+filename = "chooseMap"
 
 
 im = Image.open("images/"+filename+".png")
 file = open("txts/"+filename+".txt", 'w')
 pixel = im.load()
 N, M = im.size
-baseline = 20 #how many display line are below the bottom of the image
-topline = 0 #how many display lines are above the top of the image
-renderBlack = True #output black pixels?
+baseline = 0 #how many display line are below the bottom of the image
+topline = 10 #how many display lines are above the top of the image
+renderBlack = False #output black pixels?
 
 for j in range(M):
     for i in range(N):

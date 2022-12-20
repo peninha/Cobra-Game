@@ -3,10 +3,7 @@
 /**********************
  * TODO:
  * Splash Screen
- * Map Selection Screen
  * Improve snake waving animation
- * Bug: head color is blue when eating and size is less than 8
- * Bug: after Game Over sometimes the new snake goes in wrong direction
  * Implement Button Interruption instead of loop for reading button state
  * More maps
  *********************/
@@ -31,7 +28,7 @@ FASTLED_USING_NAMESPACE
 #define TOPN        20       //numero de colunas da TopArea
 #define AREASIZE    (PLAYM*PLAYN)
 #define SIZE0       4
-#define X0          5
+#define X0          1
 #define Y0          6
 #define HEADING0    1
 #define SNAKECOLOR  0x000050
@@ -46,7 +43,7 @@ FASTLED_USING_NAMESPACE
 #define PERIOD0     200
 #define MINPERIOD   50
 #define TAILSIZE    8
-#define MAP         1
+#define MAP         0
 
 
 CRGB leds[NUM_LEDS];
@@ -70,6 +67,7 @@ __uint24 tailColor[TAILSIZE] = { 0x000000 };
 bool rightPressed = false;
 bool leftPressed = false;
 byte topAnimation = 0;
+byte mapNumber = MAP;
 
 short px2strip(byte x, byte y){ //converte coordenadas xy para endereço do monitor (0 a 599)
   return x*M + y + (x%2)*(M-1-2*y);
@@ -141,13 +139,24 @@ void plotBordas(){
   }
 }
 
-void plotCobra(){
+void plotLetteringCobra(){
   leds[28] = 0x000000;leds[31] = 0x000000;leds[88] = 0x000000;leds[91] = 0x000000;leds[148] = 0x000000;leds[151] = 0x000000;leds[208] = 0x000000;leds[211] = 0x000000;leds[268] = 0x000000;leds[271] = 0x000000;leds[328] = 0x000000;leds[331] = 0x000000;leds[388] = 0x000000;leds[391] = 0x000000;leds[448] = 0x000000;leds[451] = 0x000000;leds[508] = 0x000000;leds[511] = 0x000000;leds[568] = 0x000000;leds[571] = 0x000000;
   leds[27] = 0x000000;leds[32] = 0x000000;leds[87] = 0x000000;leds[92] = 0x000000;leds[147] = 0x000000;leds[152] = 0x000000;leds[207] = 0x000000;leds[212] = 0x000000;leds[267] = 0x000000;leds[272] = 0x000000;leds[327] = 0x000000;leds[332] = 0x000000;leds[387] = 0x000000;leds[392] = 0x000000;leds[447] = 0x000000;leds[452] = 0x000000;leds[507] = 0x000000;leds[512] = 0x000000;leds[567] = 0x000000;leds[572] = 0x000000;
   leds[26] = 0x000000;leds[33] = 0x121212;leds[86] = 0x121212;leds[93] = 0x121212;leds[146] = 0x000000;leds[153] = 0x000000;leds[206] = 0x000000;leds[213] = 0x000000;leds[266] = 0x000000;leds[273] = 0x121212;leds[326] = 0x000000;leds[333] = 0x000000;leds[386] = 0x000000;leds[393] = 0x000000;leds[446] = 0x000000;leds[453] = 0x000000;leds[506] = 0x121212;leds[513] = 0x121212;leds[566] = 0x121212;leds[573] = 0x000000;
   leds[25] = 0x000000;leds[34] = 0x121212;leds[85] = 0x000000;leds[94] = 0x000000;leds[145] = 0x000000;leds[154] = 0x121212;leds[205] = 0x121212;leds[214] = 0x121212;leds[265] = 0x000000;leds[274] = 0x121212;leds[325] = 0x121212;leds[334] = 0x121212;leds[385] = 0x000000;leds[394] = 0x121212;leds[445] = 0x121212;leds[454] = 0x000000;leds[505] = 0x121212;leds[514] = 0x000000;leds[565] = 0x121212;leds[574] = 0x000000;
   leds[24] = 0x000000;leds[35] = 0x121212;leds[84] = 0x000000;leds[95] = 0x000000;leds[144] = 0x000000;leds[155] = 0x121212;leds[204] = 0x000000;leds[215] = 0x121212;leds[264] = 0x000000;leds[275] = 0x121212;leds[324] = 0x000000;leds[335] = 0x121212;leds[384] = 0x000000;leds[395] = 0x121212;leds[444] = 0x000000;leds[455] = 0x000000;leds[504] = 0x121212;leds[515] = 0x121212;leds[564] = 0x121212;leds[575] = 0x000000;
   leds[23] = 0x000000;leds[36] = 0x121212;leds[83] = 0x121212;leds[96] = 0x121212;leds[143] = 0x000000;leds[156] = 0x121212;leds[203] = 0x121212;leds[216] = 0x121212;leds[263] = 0x000000;leds[276] = 0x121212;leds[323] = 0x121212;leds[336] = 0x121212;leds[383] = 0x000000;leds[396] = 0x121212;leds[443] = 0x000000;leds[456] = 0x000000;leds[503] = 0x121212;leds[516] = 0x000000;leds[563] = 0x121212;leds[576] = 0x000000;
+  leds[22] = 0x000000;leds[37] = 0x000000;leds[82] = 0x000000;leds[97] = 0x000000;leds[142] = 0x000000;leds[157] = 0x000000;leds[202] = 0x000000;leds[217] = 0x000000;leds[262] = 0x000000;leds[277] = 0x000000;leds[322] = 0x000000;leds[337] = 0x000000;leds[382] = 0x000000;leds[397] = 0x000000;leds[442] = 0x000000;leds[457] = 0x000000;leds[502] = 0x000000;leds[517] = 0x000000;leds[562] = 0x000000;leds[577] = 0x000000;
+  leds[21] = 0x000000;leds[38] = 0x000000;leds[81] = 0x000000;leds[98] = 0x000000;leds[141] = 0x000000;leds[158] = 0x000000;leds[201] = 0x000000;leds[218] = 0x000000;leds[261] = 0x000000;leds[278] = 0x000000;leds[321] = 0x000000;leds[338] = 0x000000;leds[381] = 0x000000;leds[398] = 0x000000;leds[441] = 0x000000;leds[458] = 0x000000;leds[501] = 0x000000;leds[518] = 0x000000;leds[561] = 0x000000;leds[578] = 0x000000;
+}
+
+void plotLetteringMapa(){
+  leds[28] = 0x000000;leds[31] = 0x000000;leds[88] = 0x000000;leds[91] = 0x000000;leds[148] = 0x000000;leds[151] = 0x000000;leds[208] = 0x000000;leds[211] = 0x000000;leds[268] = 0x000000;leds[271] = 0x000000;leds[328] = 0x000000;leds[331] = 0x000000;leds[388] = 0x000000;leds[391] = 0x000000;leds[448] = 0x000000;leds[451] = 0x000000;leds[508] = 0x000000;leds[511] = 0x000000;leds[568] = 0x000000;leds[571] = 0x000000;
+  leds[27] = 0x000000;leds[32] = 0x000000;leds[87] = 0x000000;leds[92] = 0x000000;leds[147] = 0x000000;leds[152] = 0x000000;leds[207] = 0x000000;leds[212] = 0x000000;leds[267] = 0x000000;leds[272] = 0x000000;leds[327] = 0x000000;leds[332] = 0x000000;leds[387] = 0x000000;leds[392] = 0x000000;leds[447] = 0x000000;leds[452] = 0x000000;leds[507] = 0x000000;leds[512] = 0x000000;leds[567] = 0x000000;leds[572] = 0x000000;
+  leds[26] = 0x000000;leds[33] = 0x121212;leds[86] = 0x121212;leds[93] = 0x121212;leds[146] = 0x121212;leds[153] = 0x121212;leds[206] = 0x000000;leds[213] = 0x121212;leds[266] = 0x121212;leds[273] = 0x121212;leds[326] = 0x000000;leds[333] = 0x121212;leds[386] = 0x121212;leds[393] = 0x121212;leds[446] = 0x000000;leds[453] = 0x121212;leds[506] = 0x121212;leds[513] = 0x121212;leds[566] = 0x000000;leds[573] = 0x000000;
+  leds[25] = 0x000000;leds[34] = 0x121212;leds[85] = 0x000000;leds[94] = 0x121212;leds[145] = 0x000000;leds[154] = 0x121212;leds[205] = 0x000000;leds[214] = 0x121212;leds[265] = 0x000000;leds[274] = 0x121212;leds[325] = 0x000000;leds[334] = 0x121212;leds[385] = 0x000000;leds[394] = 0x121212;leds[445] = 0x000000;leds[454] = 0x121212;leds[505] = 0x000000;leds[514] = 0x121212;leds[565] = 0x000000;leds[574] = 0x000000;
+  leds[24] = 0x000000;leds[35] = 0x121212;leds[84] = 0x000000;leds[95] = 0x121212;leds[144] = 0x000000;leds[155] = 0x121212;leds[204] = 0x000000;leds[215] = 0x121212;leds[264] = 0x121212;leds[275] = 0x121212;leds[324] = 0x000000;leds[335] = 0x121212;leds[384] = 0x121212;leds[395] = 0x121212;leds[444] = 0x000000;leds[455] = 0x121212;leds[504] = 0x121212;leds[515] = 0x121212;leds[564] = 0x000000;leds[575] = 0x000000;
+  leds[23] = 0x000000;leds[36] = 0x121212;leds[83] = 0x000000;leds[96] = 0x121212;leds[143] = 0x000000;leds[156] = 0x121212;leds[203] = 0x000000;leds[216] = 0x121212;leds[263] = 0x000000;leds[276] = 0x121212;leds[323] = 0x000000;leds[336] = 0x121212;leds[383] = 0x000000;leds[396] = 0x000000;leds[443] = 0x000000;leds[456] = 0x121212;leds[503] = 0x000000;leds[516] = 0x121212;leds[563] = 0x000000;leds[576] = 0x000000;
   leds[22] = 0x000000;leds[37] = 0x000000;leds[82] = 0x000000;leds[97] = 0x000000;leds[142] = 0x000000;leds[157] = 0x000000;leds[202] = 0x000000;leds[217] = 0x000000;leds[262] = 0x000000;leds[277] = 0x000000;leds[322] = 0x000000;leds[337] = 0x000000;leds[382] = 0x000000;leds[397] = 0x000000;leds[442] = 0x000000;leds[457] = 0x000000;leds[502] = 0x000000;leds[517] = 0x000000;leds[562] = 0x000000;leds[577] = 0x000000;
   leds[21] = 0x000000;leds[38] = 0x000000;leds[81] = 0x000000;leds[98] = 0x000000;leds[141] = 0x000000;leds[158] = 0x000000;leds[201] = 0x000000;leds[218] = 0x000000;leds[261] = 0x000000;leds[278] = 0x000000;leds[321] = 0x000000;leds[338] = 0x000000;leds[381] = 0x000000;leds[398] = 0x000000;leds[441] = 0x000000;leds[458] = 0x000000;leds[501] = 0x000000;leds[518] = 0x000000;leds[561] = 0x000000;leds[578] = 0x000000;
 }
@@ -175,109 +184,89 @@ void plotGameOver(){
   leds[0] = 0x000000;leds[59] = 0x000000;leds[60] = 0x000000;leds[119] = 0x000000;leds[120] = 0x000000;leds[179] = 0x000000;leds[180] = 0x000000;leds[239] = 0x000000;leds[240] = 0x000000;leds[299] = 0x000000;leds[300] = 0x000000;leds[359] = 0x000000;leds[360] = 0x000000;leds[419] = 0x000000;leds[420] = 0x000000;leds[479] = 0x000000;leds[480] = 0x000000;leds[539] = 0x000000;leds[540] = 0x000000;leds[599] = 0x000000;
 }
 
-void loadMap(byte n){
-  if(n){
-    bool map[PLAYN][PLAYM] = { false };
-    switch(n){
-      case 1:
-        map[0][19] = true;map[1][19] = true;map[2][19] = true;map[3][19] = true;map[6][19] = true;map[7][19] = true;map[8][19] = true;map[9][19] = true;map[10][19] = true;map[11][19] = true;map[12][19] = true;map[13][19] = true;map[16][19] = true;map[17][19] = true;map[18][19] = true;map[19][19] = true;
-        map[0][18] = true;map[19][18] = true;
-        map[0][17] = true;map[9][17] = true;map[19][17] = true;
-        map[9][16] = true;
-        map[9][15] = true;
-        map[0][14] = true;map[9][14] = true;map[19][14] = true;
-        map[0][13] = true;map[9][13] = true;map[19][13] = true;
-        map[0][12] = true;map[9][12] = true;map[19][12] = true;
-        map[0][11] = true;map[9][11] = true;map[19][11] = true;
-        map[0][10] = true;map[9][10] = true;map[19][10] = true;
-        map[0][9] = true;map[9][9] = true;map[10][9] = true;map[19][9] = true;
-        map[0][8] = true;map[10][8] = true;map[19][8] = true;
-        map[0][7] = true;map[10][7] = true;map[19][7] = true;
-        map[0][6] = true;map[10][6] = true;map[19][6] = true;
-        map[0][5] = true;map[10][5] = true;map[19][5] = true;
-        map[10][4] = true;
-        map[10][3] = true;
-        map[0][2] = true;map[10][2] = true;map[19][2] = true;
-        map[0][1] = true;map[19][1] = true;
-        map[0][0] = true;map[1][0] = true;map[2][0] = true;map[3][0] = true;map[6][0] = true;map[7][0] = true;map[8][0] = true;map[9][0] = true;map[10][0] = true;map[11][0] = true;map[12][0] = true;map[13][0] = true;map[16][0] = true;map[17][0] = true;map[18][0] = true;map[19][0] = true;
-        break;
-      case 2:
-        map[9][19] = true;
-        map[9][18] = true;
-        map[9][17] = true;map[10][17] = true;
-        map[10][16] = true;
-        map[10][15] = true;
-        map[10][14] = true;
-        map[10][13] = true;
-        map[9][12] = true;map[10][12] = true;
-        map[9][11] = true;
-        map[9][10] = true;
-        map[9][9] = true;
-        map[9][8] = true;
-        map[9][7] = true;map[10][7] = true;
-        map[10][6] = true;
-        map[10][5] = true;
-        map[10][4] = true;
-        map[10][3] = true;
-        map[9][2] = true;map[10][2] = true;
-        map[9][1] = true;
-        map[9][0] = true;
-        break;
-      case 3:
-        map[0][19] = true;map[1][19] = true;map[2][19] = true;map[3][19] = true;map[4][19] = true;map[5][19] = true;map[6][19] = true;map[7][19] = true;map[8][19] = true;map[9][19] = true;map[10][19] = true;map[11][19] = true;map[12][19] = true;map[13][19] = true;map[14][19] = true;map[15][19] = true;map[16][19] = true;map[17][19] = true;map[18][19] = true;map[19][19] = true;
-        map[0][18] = true;map[4][18] = true;map[8][18] = true;map[12][18] = true;map[16][18] = true;
-        map[0][17] = true;map[2][17] = true;map[4][17] = true;map[6][17] = true;map[8][17] = true;map[10][17] = true;map[12][17] = true;map[14][17] = true;map[16][17] = true;map[18][17] = true;
-        map[0][16] = true;map[2][16] = true;map[4][16] = true;map[6][16] = true;map[8][16] = true;map[10][16] = true;map[12][16] = true;map[14][16] = true;map[16][16] = true;map[18][16] = true;
-        map[0][15] = true;map[2][15] = true;map[4][15] = true;map[6][15] = true;map[8][15] = true;map[10][15] = true;map[12][15] = true;map[14][15] = true;map[16][15] = true;map[18][15] = true;
-        map[0][14] = true;map[2][14] = true;map[4][14] = true;map[6][14] = true;map[8][14] = true;map[10][14] = true;map[12][14] = true;map[14][14] = true;map[16][14] = true;map[18][14] = true;
-        map[0][13] = true;map[2][13] = true;map[4][13] = true;map[6][13] = true;map[8][13] = true;map[10][13] = true;map[12][13] = true;map[14][13] = true;map[16][13] = true;map[18][13] = true;
-        map[0][12] = true;map[2][12] = true;map[4][12] = true;map[6][12] = true;map[8][12] = true;map[10][12] = true;map[12][12] = true;map[14][12] = true;map[16][12] = true;map[18][12] = true;
-        map[0][11] = true;map[2][11] = true;map[4][11] = true;map[6][11] = true;map[8][11] = true;map[10][11] = true;map[12][11] = true;map[14][11] = true;map[16][11] = true;map[18][11] = true;
-        map[0][10] = true;map[2][10] = true;map[4][10] = true;map[6][10] = true;map[8][10] = true;map[10][10] = true;map[12][10] = true;map[14][10] = true;map[16][10] = true;map[18][10] = true;
-        map[0][9] = true;map[2][9] = true;map[4][9] = true;map[6][9] = true;map[8][9] = true;map[10][9] = true;map[12][9] = true;map[14][9] = true;map[16][9] = true;map[18][9] = true;
-        map[0][8] = true;map[2][8] = true;map[4][8] = true;map[6][8] = true;map[8][8] = true;map[10][8] = true;map[12][8] = true;map[14][8] = true;map[16][8] = true;map[18][8] = true;
-        map[0][7] = true;map[2][7] = true;map[4][7] = true;map[6][7] = true;map[8][7] = true;map[10][7] = true;map[12][7] = true;map[14][7] = true;map[16][7] = true;map[18][7] = true;
-        map[0][6] = true;map[2][6] = true;map[4][6] = true;map[6][6] = true;map[8][6] = true;map[10][6] = true;map[12][6] = true;map[14][6] = true;map[16][6] = true;map[18][6] = true;
-        map[0][5] = true;map[2][5] = true;map[4][5] = true;map[6][5] = true;map[8][5] = true;map[10][5] = true;map[12][5] = true;map[14][5] = true;map[16][5] = true;map[18][5] = true;
-        map[0][4] = true;map[2][4] = true;map[4][4] = true;map[6][4] = true;map[8][4] = true;map[10][4] = true;map[12][4] = true;map[14][4] = true;map[16][4] = true;map[18][4] = true;
-        map[0][3] = true;map[2][3] = true;map[4][3] = true;map[6][3] = true;map[8][3] = true;map[10][3] = true;map[12][3] = true;map[14][3] = true;map[16][3] = true;map[18][3] = true;
-        map[0][2] = true;map[2][2] = true;map[4][2] = true;map[6][2] = true;map[8][2] = true;map[10][2] = true;map[12][2] = true;map[14][2] = true;map[16][2] = true;map[18][2] = true;
-        map[2][1] = true;map[6][1] = true;map[10][1] = true;map[14][1] = true;map[18][1] = true;
-        map[0][0] = true;map[1][0] = true;map[2][0] = true;map[3][0] = true;map[4][0] = true;map[5][0] = true;map[6][0] = true;map[7][0] = true;map[8][0] = true;map[9][0] = true;map[10][0] = true;map[11][0] = true;map[12][0] = true;map[13][0] = true;map[14][0] = true;map[15][0] = true;map[16][0] = true;map[17][0] = true;map[18][0] = true;map[19][0] = true;
-        break;
-      case 4:
-        map[0][19] = true;map[1][19] = true;map[2][19] = true;map[3][19] = true;map[4][19] = true;map[5][19] = true;map[6][19] = true;map[7][19] = true;map[8][19] = true;map[9][19] = true;map[10][19] = true;map[11][19] = true;map[12][19] = true;map[13][19] = true;map[14][19] = true;map[15][19] = true;map[16][19] = true;map[17][19] = true;map[18][19] = true;map[19][19] = true;
-        map[0][18] = true;map[4][18] = true;map[8][18] = true;map[12][18] = true;map[16][18] = true;
-        map[0][17] = true;map[2][17] = true;map[4][17] = true;map[6][17] = true;map[8][17] = true;map[10][17] = true;map[12][17] = true;map[14][17] = true;map[16][17] = true;map[18][17] = true;
-        map[0][16] = true;map[2][16] = true;map[4][16] = true;map[6][16] = true;map[8][16] = true;map[10][16] = true;map[12][16] = true;map[14][16] = true;map[16][16] = true;map[18][16] = true;
-        map[0][15] = true;map[2][15] = true;map[4][15] = true;map[6][15] = true;map[8][15] = true;map[10][15] = true;map[12][15] = true;map[14][15] = true;map[16][15] = true;map[18][15] = true;
-        map[0][14] = true;map[2][14] = true;map[4][14] = true;map[6][14] = true;map[8][14] = true;map[10][14] = true;map[12][14] = true;map[14][14] = true;map[16][14] = true;map[18][14] = true;
-        map[0][13] = true;map[2][13] = true;map[4][13] = true;map[6][13] = true;map[8][13] = true;map[10][13] = true;map[12][13] = true;map[14][13] = true;map[16][13] = true;map[18][13] = true;
-        map[0][12] = true;map[2][12] = true;map[4][12] = true;map[6][12] = true;map[8][12] = true;map[10][12] = true;map[12][12] = true;map[14][12] = true;map[16][12] = true;map[18][12] = true;
-        map[0][11] = true;map[2][11] = true;map[4][11] = true;map[6][11] = true;map[8][11] = true;map[10][11] = true;map[12][11] = true;map[14][11] = true;map[16][11] = true;map[18][11] = true;
-        map[0][10] = true;map[2][10] = true;map[4][10] = true;map[6][10] = true;map[8][10] = true;map[10][10] = true;map[12][10] = true;map[14][10] = true;map[16][10] = true;map[18][10] = true;
-        map[0][9] = true;map[2][9] = true;map[4][9] = true;map[6][9] = true;map[8][9] = true;map[10][9] = true;map[12][9] = true;map[14][9] = true;map[16][9] = true;map[18][9] = true;
-        map[0][8] = true;map[2][8] = true;map[4][8] = true;map[6][8] = true;map[8][8] = true;map[10][8] = true;map[12][8] = true;map[14][8] = true;map[16][8] = true;map[18][8] = true;
-        map[0][7] = true;map[2][7] = true;map[4][7] = true;map[6][7] = true;map[8][7] = true;map[10][7] = true;map[12][7] = true;map[14][7] = true;map[16][7] = true;map[18][7] = true;
-        map[0][6] = true;map[2][6] = true;map[4][6] = true;map[6][6] = true;map[8][6] = true;map[10][6] = true;map[12][6] = true;map[14][6] = true;map[16][6] = true;map[18][6] = true;
-        map[0][5] = true;map[2][5] = true;map[4][5] = true;map[6][5] = true;map[8][5] = true;map[10][5] = true;map[12][5] = true;map[14][5] = true;map[16][5] = true;map[18][5] = true;
-        map[0][4] = true;map[2][4] = true;map[4][4] = true;map[6][4] = true;map[8][4] = true;map[10][4] = true;map[12][4] = true;map[14][4] = true;map[16][4] = true;map[18][4] = true;
-        map[0][3] = true;map[2][3] = true;map[6][3] = true;map[10][3] = true;map[14][3] = true;map[18][3] = true;
-        map[0][2] = true;map[2][2] = true;map[3][2] = true;map[4][2] = true;map[5][2] = true;map[6][2] = true;map[7][2] = true;map[8][2] = true;map[9][2] = true;map[10][2] = true;map[11][2] = true;map[12][2] = true;map[13][2] = true;map[14][2] = true;map[15][2] = true;map[16][2] = true;map[17][2] = true;map[18][2] = true;
-        map[0][1] = true;
-        map[0][0] = true;map[1][0] = true;map[2][0] = true;map[3][0] = true;map[4][0] = true;map[5][0] = true;map[6][0] = true;map[7][0] = true;map[8][0] = true;map[9][0] = true;map[10][0] = true;map[11][0] = true;map[12][0] = true;map[13][0] = true;map[14][0] = true;map[15][0] = true;map[16][0] = true;map[17][0] = true;map[18][0] = true;map[19][0] = true;
-        break;
-    }
-    for(byte j=0; j<PLAYM; j++){
-      for(byte i=0; i<PLAYN; i++){
-        if(map[i][j]) playArea[i][j] = MAPCOLOR;
-      }
+void loadMap(byte mapNumber){
+  bool map[PLAYN][PLAYM] = { false };
+  switch(mapNumber){
+    case 1: //NO MAP
+      break;
+    case 2: //MAP 1
+      map[0][19] = true;map[1][19] = true;map[2][19] = true;map[3][19] = true;map[6][19] = true;map[7][19] = true;map[8][19] = true;map[9][19] = true;map[10][19] = true;map[11][19] = true;map[12][19] = true;map[13][19] = true;map[16][19] = true;map[17][19] = true;map[18][19] = true;map[19][19] = true;
+      map[0][18] = true;map[19][18] = true;
+      map[0][17] = true;map[9][17] = true;map[19][17] = true;
+      map[9][16] = true;
+      map[9][15] = true;
+      map[0][14] = true;map[9][14] = true;map[19][14] = true;
+      map[0][13] = true;map[9][13] = true;map[19][13] = true;
+      map[0][12] = true;map[9][12] = true;map[19][12] = true;
+      map[0][11] = true;map[9][11] = true;map[19][11] = true;
+      map[0][10] = true;map[9][10] = true;map[19][10] = true;
+      map[0][9] = true;map[9][9] = true;map[10][9] = true;map[19][9] = true;
+      map[0][8] = true;map[10][8] = true;map[19][8] = true;
+      map[0][7] = true;map[10][7] = true;map[19][7] = true;
+      map[0][6] = true;map[10][6] = true;map[19][6] = true;
+      map[0][5] = true;map[10][5] = true;map[19][5] = true;
+      map[10][4] = true;
+      map[10][3] = true;
+      map[0][2] = true;map[10][2] = true;map[19][2] = true;
+      map[0][1] = true;map[19][1] = true;
+      map[0][0] = true;map[1][0] = true;map[2][0] = true;map[3][0] = true;map[6][0] = true;map[7][0] = true;map[8][0] = true;map[9][0] = true;map[10][0] = true;map[11][0] = true;map[12][0] = true;map[13][0] = true;map[16][0] = true;map[17][0] = true;map[18][0] = true;map[19][0] = true;
+      break;
+    case 3: //MAP 2
+      map[9][19] = true;
+      map[9][18] = true;
+      map[9][17] = true;map[10][17] = true;
+      map[10][16] = true;
+      map[10][15] = true;
+      map[10][14] = true;
+      map[10][13] = true;
+      map[9][12] = true;map[10][12] = true;
+      map[9][11] = true;
+      map[9][10] = true;
+      map[9][9] = true;
+      map[9][8] = true;
+      map[9][7] = true;map[10][7] = true;
+      map[10][6] = true;
+      map[10][5] = true;
+      map[10][4] = true;
+      map[10][3] = true;
+      map[9][2] = true;map[10][2] = true;
+      map[9][1] = true;
+      map[9][0] = true;
+      break;
+    case 4: //MAP 3
+      map[3][16] = true;map[5][16] = true;map[6][16] = true;map[7][16] = true;map[8][16] = true;map[11][16] = true;map[12][16] = true;map[13][16] = true;map[14][16] = true;map[16][16] = true;
+      map[3][14] = true;map[16][14] = true;
+      map[3][13] = true;map[16][13] = true;
+      map[3][12] = true;map[16][12] = true;
+      map[3][11] = true;map[16][11] = true;
+      map[3][8] = true;map[16][8] = true;
+      map[3][7] = true;map[16][7] = true;
+      map[3][6] = true;map[16][6] = true;
+      map[3][5] = true;map[16][5] = true;
+      map[3][3] = true;map[5][3] = true;map[6][3] = true;map[7][3] = true;map[8][3] = true;map[11][3] = true;map[12][3] = true;map[13][3] = true;map[14][3] = true;map[16][3] = true;
+      break;
+    case 200: //Map Selection
+      map[4][17] = true;map[5][17] = true;map[14][17] = true;map[15][17] = true;map[16][17] = true;
+      map[3][16] = true;map[5][16] = true;map[16][16] = true;
+      map[5][15] = true;map[14][15] = true;map[15][15] = true;map[16][15] = true;
+      map[5][14] = true;map[14][14] = true;
+      map[5][13] = true;map[14][13] = true;map[15][13] = true;map[16][13] = true;
+      map[3][6] = true;map[4][6] = true;map[5][6] = true;map[14][6] = true;map[16][6] = true;
+      map[5][5] = true;map[14][5] = true;map[16][5] = true;
+      map[3][4] = true;map[4][4] = true;map[5][4] = true;map[14][4] = true;map[15][4] = true;map[16][4] = true;
+      map[5][3] = true;map[16][3] = true;
+      map[3][2] = true;map[4][2] = true;map[5][2] = true;map[16][2] = true;
+      break;
+  }
+  for(byte j=0; j<PLAYM; j++){
+    for(byte i=0; i<PLAYN; i++){
+      if(map[i][j]) playArea[i][j] = MAPCOLOR;
     }
   }
 }
 
 void gameOver(short size, __uint24 color){
-  Serial.println(size);
+  //Serial.println(size);
   short counter;
   delay(200);
   for(byte i=0; i<2; i++){
@@ -290,7 +279,6 @@ void gameOver(short size, __uint24 color){
   plotGameOver();
   FastLED.show();
   delay(1000);
-  clearPlayArea();
   counter = 0;
   for(byte j=0; j<PLAYM; j++){
     for(byte i=0; i<PLAYN; i++){
@@ -307,15 +295,22 @@ void gameOver(short size, __uint24 color){
   }
   delay(5000);
   clearPlayArea();
-  loadMap(MAP);
+  loadMap(mapNumber);
   topAnimation = 0;
+}
+
+void selectMap(){
+  //splashScreen(); #TO DO
+  plotBordas();
+  plotLetteringMapa();
+  loadMap(200);
 }
 
 void initGame(){
   //splashScreen(); #TO DO
   plotBordas();
-  plotCobra();
-  loadMap(MAP);
+  plotLetteringCobra();
+  loadMap(mapNumber);
 }
 
 class Food{
@@ -406,7 +401,7 @@ class Snake{
     }
     void Draw() {
       for(short i=0; i<size; i++){
-        if(i==size-1)    playArea[body2X(i)][body2Y(i)] = HEADCOLOR; else
+        if(i==size-1)    playArea[body2X(i)][body2Y(i)] = headColor; else
         if(i<TAILSIZE-1) playArea[body2X(i)][body2Y(i)] = tailColor[i+1]; else
                          playArea[body2X(i)][body2Y(i)] = color;
       }
@@ -460,27 +455,40 @@ class Snake{
           if(period<MINPERIOD) period = MINPERIOD;
           break;
         case 2: //Collided
-          Serial.println("COLIDIU");
-          gameOver(size, color);
+          if(mapNumber==0){ //select map
+            if(x<=9){
+              if(y>9) mapNumber=1;
+              else mapNumber=3;
+            }else{
+              if(y>9) mapNumber=2;
+              else mapNumber=4;
+            }
+            clearPlayArea();
+            initGame();
+          }else{
+            gameOver(size, color);
+          }
           init(SIZE0, HEADING0, X0, Y0);
+          rightPressed = false;
+          leftPressed = false;
           food.init();
           plotPlayArea();
           period = PERIOD0;
           return 0;
           break;
       }
-      playArea[x][y] = headColor;
-      playArea2px(x, y);
       playArea[neckX][neckY] = color;
       playArea2px(neckX, neckY);
       playArea[tailX[0]][tailY[0]] = 0;
       playArea2px(tailX[0], tailY[0]);
       for(byte i=1; i<TAILSIZE; i++){
         if(i<size){
-          playArea[tailX[i]][tailY[i]] = tailColor[i]; //leds[i] = ColorFromPalette(bluePalette, i);
+          playArea[tailX[i]][tailY[i]] = tailColor[i];
           playArea2px(tailX[i], tailY[i]);
         }
       }
+      playArea[x][y] = headColor;
+      playArea2px(x, y);
       FastLED.show();
     }
     byte CheckColision(){
@@ -625,17 +633,6 @@ Food food;
 void setup() {
   Serial.begin(9600);
   Serial.println("setup");
-  /*
-  for(byte x=0; x<8; x++){
-    for(byte y=0; y<8; y++){
-      Serial.print(x);
-      Serial.print(" ");
-      Serial.print(y);
-      Serial.print(" = ");
-      Serial.println(long(appleSprite[x][y]));
-    }
-  }
-  */
   pinMode(RIGHT_BTN, INPUT_PULLUP);
   pinMode(LEFT_BTN, INPUT_PULLUP);
   //randomSeed(42);
@@ -643,16 +640,26 @@ void setup() {
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.clear();
-  initGame();
+  selectMap();
+  //initGame();
   delay(200);
   for(byte i=0; i<TAILSIZE; i++){
     tailColor[i] = ((long)ColorFromPalette(bluePalette, i).r << 16) | ((long)ColorFromPalette(bluePalette, i).g << 8 ) | (long)ColorFromPalette(bluePalette, i).b; // get value and convert.
   }
-  snake.init(SIZE0, HEADING0, X0, Y0);
-  food.init();
+  snake.init(4, 1, 9, 5);
+  //food.init();
   plotPlayArea();
   startMillis = millis();  //initial start time
   startTopMillis = millis();  //initial start time
+}
+
+void selectMapLoop(){
+  currentMillis = millis();
+  if(currentMillis - startMillis >= period)  //test whether the period has elapsed
+  {
+    snake.Next(food);
+    startMillis = currentMillis;
+  }
 }
 
 void playAreaLoop(){
@@ -672,7 +679,7 @@ void topScreenLoop(){
   {
     switch(topAnimation){
       case 0:
-        plotCobra();
+        plotLetteringCobra();
         topAnimation = 2;
         topPeriod = 3000;
         break;
@@ -700,7 +707,9 @@ void topScreenLoop(){
 
 void loop(){
   playAreaLoop();
-  topScreenLoop();
+  if(mapNumber){
+    topScreenLoop();
+  }
   
   if(!rightPressed && digitalRead(RIGHT_BTN) == HIGH){
     //Serial.println("direita");

@@ -1,0 +1,20 @@
+
+
+map[4][17] = true;map[5][17] = true;map[14][17] = true;map[15][17] = true;map[16][17] = true;
+map[3][16] = true;map[5][16] = true;map[16][16] = true;
+map[5][15] = true;map[14][15] = true;map[15][15] = true;map[16][15] = true;
+map[5][14] = true;map[14][14] = true;
+map[5][13] = true;map[14][13] = true;map[15][13] = true;map[16][13] = true;
+
+
+
+
+
+
+map[3][6] = true;map[4][6] = true;map[5][6] = true;map[14][6] = true;map[16][6] = true;
+map[5][5] = true;map[14][5] = true;map[16][5] = true;
+map[3][4] = true;map[4][4] = true;map[5][4] = true;map[14][4] = true;map[15][4] = true;map[16][4] = true;
+map[5][3] = true;map[16][3] = true;
+map[3][2] = true;map[4][2] = true;map[5][2] = true;map[16][2] = true;
+
+

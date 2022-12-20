@@ -3,7 +3,7 @@ from PIL import Image
 def rgb2hex(r, g, b):
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
-filename = "map_02"
+filename = "map_04b"
 
 
 im = Image.open("images/"+filename+".png")
