@@ -3,11 +3,9 @@
 /**********************
  * TODO:
  * Splash Screen
+ * Map Selection Screen
  * Improve snake waving animation
- * Make apple animation
- * Make snake bite animation
  * Bug: head color is blue when eating and size is less than 8
- * Bug: after Game Over should reset top animation
  * Bug: after Game Over sometimes the new snake goes in wrong direction
  * Implement Button Interruption instead of loop for reading button state
  * More maps
@@ -40,10 +38,16 @@ FASTLED_USING_NAMESPACE
 #define HEADCOLOR   0x204000
 #define FOODCOLOR   0x500000
 #define MAPCOLOR    0x050805
+#define APPLERED1   0x300000
+#define APPLERED2   0x100000
+#define APPLERED3   0x060000
+#define APPLERED4   0x030000
+#define APPLEGLOSS  0x101010
 #define PERIOD0     200
 #define MINPERIOD   50
 #define TAILSIZE    8
 #define MAP         1
+
 
 CRGB leds[NUM_LEDS];
 DEFINE_GRADIENT_PALETTE( blueGp ) {
@@ -304,6 +308,7 @@ void gameOver(short size, __uint24 color){
   delay(5000);
   clearPlayArea();
   loadMap(MAP);
+  topAnimation = 0;
 }
 
 void initGame(){
@@ -509,38 +514,40 @@ class Snake{
     }
 };
 
-Snake snake;
-Food food;
+__uint24 appleSprite[8][8] = {
+  {          0,          0,  APPLERED1,  APPLERED1,  APPLERED2,  APPLERED3,          0,          0},
+  {          0,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED2,  APPLERED3,          0},
+  {  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED2,  APPLERED3},
+  {  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED2,  APPLERED3},
+  {  APPLERED1, APPLEGLOSS,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED1,  APPLERED2,  APPLERED3},
+  {          0,  APPLERED1, APPLEGLOSS,  APPLERED1,  APPLERED1,  APPLERED2,  APPLERED3,          0},
+  {          0,          0,  APPLERED1,  APPLERED4,  APPLERED4,  APPLERED1,          0,          0},
+  {          0,          0,          0,          0,          0,          0,          0,          0},
+};
 
-void setup() {
-  Serial.begin(9600);
-  Serial.println("setup");
-  pinMode(RIGHT_BTN, INPUT_PULLUP);
-  pinMode(LEFT_BTN, INPUT_PULLUP);
-  //randomSeed(42);
-  randomSeed(analogRead(1));
-  // tell FastLED about the LED strip configuration
-  FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.clear();
-  initGame();
-  delay(200);
-  for(byte i=0; i<TAILSIZE; i++){
-    tailColor[i] = ((long)ColorFromPalette(bluePalette, i).r << 16) | ((long)ColorFromPalette(bluePalette, i).g << 8 ) | (long)ColorFromPalette(bluePalette, i).b; // get value and convert.
-  }
-  snake.init(SIZE0, HEADING0, X0, Y0);
-  food.init();
-  plotPlayArea();
-  startMillis = millis();  //initial start time
-  startTopMillis = millis();  //initial start time
-}
+int8_t appleMotion[38][2] = {
+  {11, 7}, { 9, 6}, { 7, 5}, { 5, 4}, { 3, 3}, { 2, 2}, { 1, 1}, { 1, 0}, { 2,-1}, { 3,-2},
+  { 4,-3}, { 6,-3}, { 7,-3}, { 8,-3}, { 9,-2}, {10,-1}, {10, 0}, { 9, 1}, { 8, 1}, { 7, 1},
+  { 6, 1}, { 6, 0}, { 6, 0}, { 6, 0}, { 7, 0}, { 8, 0}, { 9, 0}, {10, 0}, {11, 0}, {12, 0},
+  {13, 0}, {14, 0}, {15, 0}, {16, 0}, {17, 0}, {18, 0}, {19, 0}, {20, 0},
+};
 
-void playAreaLoop(){
-  currentMillis = millis();
-  if(currentMillis - startMillis >= period)  //test whether the period has elapsed
-  {
-    snake.Next(food);
-    startMillis = currentMillis;
+short animateApple(short step){
+  short x0 = appleMotion[step][0];
+  short y0 = appleMotion[step][1];
+  short xS, yS;
+  for(byte x=0; x<TOPN; x++){
+    for(byte y=0; y<TOPM; y++){
+      topArea[x][y] = 0;
+      xS = x-x0;
+      yS = y-y0;
+      if(xS>=0 && xS<8 && yS>=0 && yS<8){
+        topArea[x][y] = appleSprite[yS][xS];
+      }
+    }
   }
+  plotTopArea();
+  return step+1;
 }
 
 bool headSprite[6][6] = {
@@ -550,7 +557,7 @@ bool headSprite[6][6] = {
   {1, 1, 1, 1, 1, 1},
   {1, 1, 1, 0, 1, 1},
   {0, 1, 1, 1, 1, 0}
-  };
+};
 
 short animateCobra(short step, short size){
   short x0 = step;
@@ -612,6 +619,51 @@ short animateCobra(short step, short size){
   return step+1;
 }
 
+Snake snake;
+Food food;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("setup");
+  /*
+  for(byte x=0; x<8; x++){
+    for(byte y=0; y<8; y++){
+      Serial.print(x);
+      Serial.print(" ");
+      Serial.print(y);
+      Serial.print(" = ");
+      Serial.println(long(appleSprite[x][y]));
+    }
+  }
+  */
+  pinMode(RIGHT_BTN, INPUT_PULLUP);
+  pinMode(LEFT_BTN, INPUT_PULLUP);
+  //randomSeed(42);
+  randomSeed(analogRead(1));
+  // tell FastLED about the LED strip configuration
+  FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.clear();
+  initGame();
+  delay(200);
+  for(byte i=0; i<TAILSIZE; i++){
+    tailColor[i] = ((long)ColorFromPalette(bluePalette, i).r << 16) | ((long)ColorFromPalette(bluePalette, i).g << 8 ) | (long)ColorFromPalette(bluePalette, i).b; // get value and convert.
+  }
+  snake.init(SIZE0, HEADING0, X0, Y0);
+  food.init();
+  plotPlayArea();
+  startMillis = millis();  //initial start time
+  startTopMillis = millis();  //initial start time
+}
+
+void playAreaLoop(){
+  currentMillis = millis();
+  if(currentMillis - startMillis >= period)  //test whether the period has elapsed
+  {
+    snake.Next(food);
+    startMillis = currentMillis;
+  }
+}
+
 void topScreenLoop(){
   static short step = 0;
   static short size;
@@ -621,8 +673,8 @@ void topScreenLoop(){
     switch(topAnimation){
       case 0:
         plotCobra();
-        topAnimation = 1;
-        topPeriod = 5000;
+        topAnimation = 2;
+        topPeriod = 3000;
         break;
       case 1:
         if(step==0) size = snake.size;
@@ -631,6 +683,14 @@ void topScreenLoop(){
         if(step > size*4+28){
           step = 0;
           topAnimation = 0;
+        }
+        break;
+      case 2:
+        step = animateApple(step);
+        topPeriod = 100;
+        if(step > 36){
+          step = 0;
+          topAnimation = 1;
         }
         break;
     }
